@@ -1,0 +1,15 @@
+/* ---------- consola ---------- */
+.console{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line)}
+.console-bar{display:flex;align-items:center;gap:12px;padding:8px 24px;cursor:pointer;color:var(--ink-2);font-size:13px;user-select:none}
+.console-bar b{color:var(--ink);font-weight:600}
+.console-body{display:none;border-top:1px solid var(--line-soft)}
+.console.open .console-body{display:block}
+.log{height:210px;overflow:auto;padding:8px 24px;font:400 12px/1.6 var(--mono);color:var(--ink-2)}
+.log div{overflow-wrap:anywhere}
+.log .tx{color:var(--ui)} .log .err{color:var(--alarm)} .log .info{color:var(--sp)}
+.console-in{display:flex;gap:8px;padding:8px 24px 12px;align-items:center;flex-wrap:wrap}
+.console-in input[type=text]{flex:1;min-width:200px;background:var(--field);border:1px solid var(--line);border-radius:var(--r-sm);padding:7px 10px;font:400 13px var(--mono);outline:none}
+.console-in input[type=text]:focus{border-color:var(--ui)}
+.console-in label{color:var(--ink-2);font-size:12.5px;display:inline-flex;gap:6px;align-items:center}
+.toast{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);max-width:min(560px,92vw);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:var(--r-md);font-weight:500;z-index:50;display:none;box-shadow:0 14px 36px -10px rgba(0,0,0,.6)}
+.toast.show{display:block}

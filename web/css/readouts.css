@@ -1,0 +1,22 @@
+/* ---------- lecturas ---------- */
+.readouts{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:28px;padding:24px 26px 20px}
+.lbl{color:var(--ink-2);font-size:13px}
+.pv-val{display:flex;align-items:baseline;gap:6px;margin:2px 0 14px}
+.pv-val #pv{font:300 clamp(54px,7.2vw,92px)/1 var(--mono);letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.pv-val .unit{font:300 clamp(22px,2.6vw,32px)/1 var(--mono);color:var(--muted)}
+.rail{position:relative;height:30px;margin-top:6px}
+.rail::before{content:"";position:absolute;left:0;right:0;top:13px;height:4px;border-radius:4px;background:var(--line)}
+.rail .band{position:absolute;top:9px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--sp) 28%,transparent);border:1px solid color-mix(in srgb,var(--sp) 55%,transparent)}
+.rail .tick-sp{position:absolute;top:4px;width:2px;height:22px;background:var(--sp);transform:translateX(-1px);border-radius:2px}
+.rail .tick-pv{position:absolute;top:8px;width:14px;height:14px;border-radius:50%;background:var(--pv);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--pv);transform:translateX(-7px);transition:left .5s cubic-bezier(.2,.7,.2,1)}
+.rail .tick-pv.off{border-radius:3px;transform:translateX(-7px) rotate(45deg)}
+.rail-scale{display:flex;justify-content:space-between;font:400 11px var(--mono);color:var(--muted);margin-top:2px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:18px 20px;align-content:start;margin:0}
+.facts dt{color:var(--ink-2);font-size:13px;display:flex;align-items:center;gap:7px}
+.facts dd{margin:3px 0 0;font:400 25px/1.15 var(--mono);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.facts dd small{display:block;font:400 12px var(--sans);color:var(--muted);letter-spacing:0;margin-top:3px}
+.sw{width:18px;height:0;border-top:2.5px solid var(--pv);border-radius:2px;display:inline-block}
+.sw.dash{border-top:2.5px dashed var(--sp)}
+.relay{display:inline-flex;align-items:center;gap:9px;font:500 17px var(--sans);letter-spacing:0}
+.relay i{width:12px;height:12px;border-radius:50%;background:var(--line);display:inline-block;transition:background .2s,box-shadow .2s}
+.relay.on i{background:var(--heat);box-shadow:0 0 0 4px color-mix(in srgb,var(--heat) 28%,transparent),0 0 16px var(--heat)}

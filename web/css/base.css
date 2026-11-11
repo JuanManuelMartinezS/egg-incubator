@@ -1,0 +1,63 @@
+:root{
+  --sans:"Schibsted Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Martian Mono",ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+  --r-lg:18px; --r-md:10px; --r-sm:7px;
+}
+[data-theme="dark"]{
+  --bg:#0b1214; --surface:#121d20; --surface-2:#18262a; --field:#0e171a;
+  --line:#243439; --line-soft:#1b2a2e;
+  --ink:#e9f1f0; --ink-2:#a8bbbb; --muted:#728a8c;
+  --pv:#2a9d8f; --sp:#bf8618; --heat:#e5603a; --ok:#4aa87a; --alarm:#ff5d5d;
+  --ui:#3cc2b1; --ui-ink:#04211d;
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 20px 50px -30px rgba(0,0,0,.8);
+}
+[data-theme="light"]{
+  --bg:#edf1f0; --surface:#ffffff; --surface-2:#f3f6f5; --field:#f6f8f8;
+  --line:#d3dddb; --line-soft:#e4ebea;
+  --ink:#0f2120; --ink-2:#42585a; --muted:#6b8082;
+  --pv:#0e8f83; --sp:#b87a00; --heat:#d2491f; --ok:#2f8f5f; --alarm:#d62f2f;
+  --ui:#0e8f83; --ui-ink:#ffffff;
+  --shadow:0 18px 40px -30px rgba(16,40,38,.35);
+}
+*{box-sizing:border-box}
+html{color-scheme:dark light}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ui);outline-offset:2px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- barra superior ---------- */
+.top{display:flex;align-items:center;gap:16px;padding:12px 24px;border-bottom:1px solid var(--line-soft);position:sticky;top:0;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);z-index:20}
+.brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.brand svg{flex:none}
+.brand b{font-weight:600;font-size:15px;letter-spacing:.005em}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:-2px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);font-size:13px;color:var(--ink-2);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.pill[data-state="on"] .dot{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.pill[data-state="demo"] .dot{background:var(--sp);box-shadow:0 0 0 3px color-mix(in srgb,var(--sp) 25%,transparent)}
+.pill[data-state="warn"] .dot{background:var(--alarm)}
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 13px;border-radius:var(--r-sm);font-weight:500;color:var(--ink);transition:background .15s,border-color .15s}
+.btn:hover:not(:disabled){background:var(--surface-2);border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--ui);border-color:var(--ui);color:var(--ui-ink)}
+.btn.primary:hover:not(:disabled){background:color-mix(in srgb,var(--ui) 88%,white)}
+.btn.sm{padding:4px 10px;font-size:12.5px}
+.btn.ghost{background:transparent}
+.btn[aria-pressed="true"]{background:var(--surface-2);border-color:var(--ui);color:var(--ink)}
+select.btn{padding-right:6px}
+.iconbtn{width:34px;height:34px;padding:0;display:grid;place-items:center}
+
+.demo-strip{display:none;align-items:center;gap:12px;padding:8px 24px;background:color-mix(in srgb,var(--sp) 12%,var(--bg));border-bottom:1px solid color-mix(in srgb,var(--sp) 35%,var(--line));font-size:13px;color:var(--ink-2);flex-wrap:wrap}
+body[data-conn="demo"] .demo-strip{display:flex}
+.demo-strip b{color:var(--ink);font-weight:600}
+.banner{display:none;margin:16px 24px 0;padding:10px 14px;border-radius:var(--r-md);border:1px solid color-mix(in srgb,var(--sp) 50%,var(--line));background:color-mix(in srgb,var(--sp) 10%,var(--surface));color:var(--ink-2)}
+.banner.show{display:block}
+
+/* ---------- estructura ---------- */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:20px;padding:20px 24px 90px;align-items:start}
+.stage,.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+.stage{overflow:hidden}
+.alarm{display:none;padding:10px 22px;background:var(--alarm);color:#fff;font-weight:600}
+.alarm.show{display:block}
