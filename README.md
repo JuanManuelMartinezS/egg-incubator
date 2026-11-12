@@ -18,7 +18,7 @@ En esta incubadora cada bloque del diagrama es:
 | **Sensor y acondicionamiento** | Sensor de temperatura y amplificadores que adaptan su señal al rango del ADC del Arduino. La constante `ADCFS` indica cuántos °C representa el fondo de escala (1023) |
 | **Controlador** | Arduino Uno con el firmware `incubadora.ino`. Promedia 8 lecturas para reducir ruido |
 | **Preactuador** | Etapa de potencia del relé (pin `5`) |
-| **Actuador** | Resistencia calefactora, accionada por el relé. Un LED en el pin `7` indica su estado |
+| **Actuador** | Resistencia calefactora, accionada por el relé (pin `5`). Un LED en el pin `7` indica su estado. El ventilador (pin `6`) se enciende y apaga siempre junto con el relé |
 | **Entradas de usuario** | Interruptores DIP (pines `3` y `4`) y botón (pin `2`) |
 | **HMI** | Interfaz web (`web/`): lecturas, gráficas, configuración, consola serie |
 

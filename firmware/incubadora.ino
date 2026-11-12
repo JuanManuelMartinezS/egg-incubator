@@ -44,6 +44,7 @@ const int pinPV            = A1;
 const int pinSP            = A0;
 const int pinBoton         = 2;
 const int pinRele          = 5;
+const int pinVentilador    = 6;  // se enciende junto con el relé
 const int pinDipAutoManual = 3;  // DIP SW 1  (LOW = automático)
 const int pinDipHystPWM    = 4;  // DIP SW 2  (HIGH = histéresis, LOW = PWM)
 
@@ -105,6 +106,7 @@ float readAnalogC(int pin) {
 void applyOutput(bool on) {
   relayOn = on;
   digitalWrite(pinRele, on ? HIGH : LOW);
+  digitalWrite(pinVentilador, on ? HIGH : LOW);
   digitalWrite(redLED, on ? HIGH : LOW);
 }
 
@@ -241,6 +243,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(redLED, OUTPUT);
   pinMode(pinRele, OUTPUT);
+  pinMode(pinVentilador, OUTPUT);
   pinMode(pinDipAutoManual, INPUT_PULLUP);
   pinMode(pinDipHystPWM, INPUT_PULLUP);
   pinMode(pinBoton, INPUT_PULLUP);
