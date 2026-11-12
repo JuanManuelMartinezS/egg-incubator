@@ -47,6 +47,11 @@ button{cursor:pointer}
 .btn.ghost{background:transparent}
 .btn[aria-pressed="true"]{background:var(--surface-2);border-color:var(--ui);color:var(--ink)}
 select.btn{padding-right:6px}
+.btn.estop{display:inline-flex;align-items:center;gap:7px;background:var(--alarm);border-color:var(--alarm);color:#fff;font-weight:700;letter-spacing:.03em}
+.btn.estop:hover:not(:disabled){background:color-mix(in srgb,var(--alarm) 85%,black);border-color:color-mix(in srgb,var(--alarm) 85%,black)}
+.btn.estop.active{background:var(--surface);color:var(--alarm);border-color:var(--alarm);animation:estop-pulse 1s ease-in-out infinite}
+@keyframes estop-pulse{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--alarm) 30%,transparent)}}
+@media (prefers-reduced-motion:reduce){.btn.estop.active{animation:none}}
 .iconbtn{width:34px;height:34px;padding:0;display:grid;place-items:center}
 
 .demo-strip{display:none;align-items:center;gap:12px;padding:8px 24px;background:color-mix(in srgb,var(--sp) 12%,var(--bg));border-bottom:1px solid color-mix(in srgb,var(--sp) 35%,var(--line));font-size:13px;color:var(--ink-2);flex-wrap:wrap}

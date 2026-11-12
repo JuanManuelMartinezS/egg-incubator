@@ -23,6 +23,7 @@ class Sim {
       if (l === 'GET') this.printCfg();
       else if (l === 'SAVE') this.emit('OK SAVE');
       else if (l === 'DEFAULTS') { this.cfg = { ...DEFAULT_CFG, MODESRC: 1, SPSRC: 1 }; this.emit('OK DEFAULTS'); this.printCfg(); }
+      else if (l.startsWith('ESTOP ')) { this.estop = +l.slice(6) !== 0; if (this.estop) { this.soft = false; this.hystOn = false; this.out = false; } this.winStart = -1; this.emit(this.estop ? 'INFO PARO DE EMERGENCIA ACTIVO' : 'INFO PARO REARMADO'); }
       else if (l.startsWith('RELAY ')) { this.soft = +l.slice(6) !== 0; this.emit('OK RELAY'); }
       else if (l.startsWith('SET ')) {
         const [, key, val] = l.split(/\s+/); const v = parseFloat(val); const K = (key || '').toUpperCase();
@@ -52,11 +53,11 @@ class Sim {
       if (this.winStart < 0 || this.ms - this.winStart >= c.PERIOD) { this.winStart = this.ms; this.timeOn = c.PERIOD * this.errPct / 100; }
       out = (this.ms - this.winStart) < this.timeOn; this.duty = this.errPct;
     } else { out = this.soft; this.duty = out ? 100 : 0; }
-    this.alarm = this.pv >= c.TMAX; if (this.alarm) { out = false; this.hystOn = false; }
+    this.alarm = this.pv >= c.TMAX; if (this.alarm || this.estop) { out = false; this.hystOn = false; }
     this.out = out;
     if (this.ms - this.lastPrint >= c.INTERVAL) {
       this.lastPrint = this.ms;
-      this.emit(`T,${Math.round(this.ms)},${this.sp.toFixed(2)},${this.pv.toFixed(2)},${this.errPct.toFixed(1)},${out ? 1 : 0},${mode},${this.duty.toFixed(1)},${this.alarm ? 1 : 0}`);
+      this.emit(`T,${Math.round(this.ms)},${this.sp.toFixed(2)},${this.pv.toFixed(2)},${this.errPct.toFixed(1)},${out ? 1 : 0},${mode},${this.duty.toFixed(1)},${this.alarm ? 1 : 0},${this.estop ? 1 : 0}`);
     }
   }
 }

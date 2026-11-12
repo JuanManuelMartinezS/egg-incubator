@@ -12,7 +12,7 @@
 
   Protocolo (una línea por mensaje, terminada en \n)
     Arduino -> PC
-      T,<ms>,<sp>,<pv>,<err%>,<salida>,<modo>,<duty%>,<alarma>   telemetría
+      T,<ms>,<sp>,<pv>,<err%>,<salida>,<modo>,<duty%>,<alarma>,<estop>   telemetría
       C,CLAVE=valor,CLAVE=valor,...                               configuración actual
       OK <CLAVE>   |   ERR <motivo>   |   INFO <texto>
     PC -> Arduino
@@ -21,6 +21,7 @@
       SAVE                 guarda la configuración en EEPROM
       DEFAULTS             restaura valores de fábrica (no los guarda)
       RELAY <0|1>          relé manual por software (solo modo MANUAL con MODESRC=SW)
+      ESTOP <0|1>          1 = paro de emergencia: apaga la salida en cualquier modo hasta ESTOP 0
 
   Claves
     MODE      0 manual, 1 histéresis, 2 PWM          (solo si MODESRC=1)
@@ -84,6 +85,7 @@ float dutyPercent = 0;
 bool  relayOn = false;
 bool  alarm = false;
 bool  softRelay = false;     // relé manual pedido por la interfaz
+bool  estop = false;         // paro de emergencia pedido por la interfaz (se queda activo hasta ESTOP 0)
 bool  hystOn = false;        // estado de la histéresis
 uint8_t lastMode = 255;
 unsigned long windowStart = 0;
@@ -137,7 +139,8 @@ void printTelemetry(uint8_t mode) {
   Serial.print(relayOn ? 1 : 0);       Serial.print(',');
   Serial.print(mode);                  Serial.print(',');
   Serial.print(dutyPercent, 1);        Serial.print(',');
-  Serial.println(alarm ? 1 : 0);
+  Serial.print(alarm ? 1 : 0);         Serial.print(',');
+  Serial.println(estop ? 1 : 0);
 }
 
 // ---------- Comandos ----------
@@ -169,6 +172,11 @@ void handleLine(String line) {
     setDefaults();
     Serial.println(F("OK DEFAULTS"));
     printConfig();
+  } else if (line.startsWith("ESTOP ")) {
+    estop = line.substring(6).toInt() != 0;
+    if (estop) { softRelay = false; hystOn = false; applyOutput(false); }   // corta ya, sin esperar al lazo
+    windowStart = 0;
+    Serial.println(estop ? F("INFO PARO DE EMERGENCIA ACTIVO") : F("INFO PARO REARMADO"));
   } else if (line.startsWith("RELAY ")) {
     softRelay = line.substring(6).toInt() != 0;
     Serial.println(F("OK RELAY"));
@@ -268,7 +276,8 @@ void loop() {
     }
 
     alarm = (valuePV >= cfg.tmax);
-    if (alarm) { out = false; hystOn = false; }
+    if (alarm || estop) { out = false; hystOn = false; }
+    if (estop) softRelay = false;
     applyOutput(out);
 
     if (now - lastPrint >= cfg.interval) {

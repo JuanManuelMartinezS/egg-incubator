@@ -1,6 +1,18 @@
 /* =====================================================================
    Lecturas en pantalla
    ===================================================================== */
+/* Paro de emergencia: botón de la barra superior + franja de aviso */
+function updateEstopUI() {
+  const on = !!S.conn && !!S.estop, btn = $('#btnEstop');
+  btn.disabled = !S.conn;
+  btn.classList.toggle('active', on);
+  $('#estopTxt').textContent = on ? 'Rearmar' : 'EMERGENCIA';
+  btn.title = on ? 'Paro activo: pulsa para rearmar el sistema' : 'Apaga la resistencia y bloquea el control';
+  const al = $('#alarm'), tmax = !!(S.last && S.last.alarm && S.conn);
+  al.classList.toggle('show', on || tmax);
+  al.textContent = on ? 'PARO DE EMERGENCIA · resistencia apagada hasta rearmar' : 'Corte de seguridad · resistencia apagada';
+}
+
 function updateReadouts() {
   const s = S.last; if (!s) return;
   $('#pv').textContent = fmt(s.pv, 1);
@@ -10,7 +22,7 @@ function updateReadouts() {
   const chip = $('#relayChip'); chip.classList.toggle('on', !!s.out);
   $('#relayTxt').textContent = s.out ? 'Encendida' : 'Apagada';
   $('#modeTxt').textContent = MODES[s.mode] ?? '--';
-  $('#alarm').classList.toggle('show', !!s.alarm);
+  updateEstopUI();
 
   // riel de temperatura
   const c = s.sp, half = 4, min = c - half, max = c + half;

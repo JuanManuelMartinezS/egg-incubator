@@ -38,6 +38,7 @@ function onTelemetry(line) {
 
   const lo = (mode === 1) ? sp * (1 - S.cfg.MARGIN / 100) : null;
   const hi = (mode === 1) ? sp * (1 + S.cfg.MARGIN / 100) : null;
+  if (p.length > 9 && Date.now() - (S.estopAt || 0) > 2000) S.estop = Number(p[9]) === 1;   // el Arduino confirma el estado
   const s = { t, w: Date.now(), sp, pv, err, out: out ? 1 : 0, mode, duty, alarm: alarm ? 1 : 0, lo, hi, seg: S.seg };
   S.data.push(s);
   if (S.data.length > MAX_SAMPLES) S.data.splice(0, 5000);

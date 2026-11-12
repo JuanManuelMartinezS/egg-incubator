@@ -16,7 +16,8 @@ function setConnUI() {
   $('#btnDemo').style.display = c ? 'none' : '';
   $('#baud').disabled = !!c;
   $('#btnConnect').disabled = !!c && c.kind === 'demo';
-  updateControls();
+  if (!c) S.estop = false;
+  updateControls(); updateEstopUI();
   if (typeof ctOnConn === 'function') ctOnConn();
 }
 
@@ -77,6 +78,14 @@ function startDemo() {
 }
 $('#btnConnect').addEventListener('click', () => (S.conn && S.conn.kind === 'serial') ? disconnect() : (S.conn ? null : connectSerial()));
 $('#btnDemo').addEventListener('click', startDemo);
+$('#btnEstop').addEventListener('click', () => {
+  if (!S.conn) return;
+  S.estop = !S.estop; S.estopAt = Date.now();
+  send('ESTOP ' + (S.estop ? 1 : 0));
+  if (S.estop) { S.cfg.RELAY = 0; setTimeout(() => S.conn && send('ESTOP 1'), 150); }   // se repite por si se pierde un byte
+  updateEstopUI(); updateControls();
+  toast(S.estop ? 'Paro de emergencia activado.' : 'Sistema rearmado.');
+});
 $('#btnDemoOff').addEventListener('click', disconnect);
 $('#demoSpeed').addEventListener('change', e => { if (S.conn?.kind === 'demo') S.conn.sim.speed = +e.target.value; });
 $('#btnDoor').addEventListener('click', () => { if (S.conn?.kind === 'demo') { S.conn.sim.T -= 3; log('info', 'Demo: puerta abierta'); } });
