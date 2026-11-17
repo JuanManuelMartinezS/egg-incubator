@@ -18,8 +18,8 @@ En esta incubadora cada bloque del diagrama es:
 | **Sensor y acondicionamiento** | Sensor de temperatura y amplificadores que adaptan su señal al rango del ADC del Arduino. La constante `ADCFS` indica cuántos °C representa el fondo de escala (1023) |
 | **Controlador** | Arduino Uno con el firmware `incubadora.ino`. Promedia 8 lecturas para reducir ruido |
 | **Preactuador** | Etapa de potencia del relé (pin `5`) |
-| **Actuador** | Resistencia calefactora, accionada por el relé (pin `5`). Un LED en el pin `7` indica su estado. El ventilador (pin `6`) se enciende y apaga siempre junto con el relé |
-| **Entradas de usuario** | Interruptores DIP (pines `3` y `4`) y botón (pin `2`) |
+| **Actuador** | Resistencia calefactora, accionada por el relé (pin `5`) y ventilador, accionado por el relé (pin `6`) se activan con `LOW` y se apagan con `HIGH`; ambos siguen la misma orden de salida y un LED en el pin `7` indica su estado |
+| **Entradas de usuario** | Interruptores DIP (pines `3` y `4`), botón manual (pin `2`) y pulsador de emergencia (pin `8`) |
 | **HMI** | Interfaz web (`web/`): lecturas, gráficas, configuración, consola serie |
 
 ### Métodos de control
@@ -32,8 +32,9 @@ La interfaz tiene una tabla que compara las tres técnicas, con un rango ± conf
 ### Seguridad
 - **Corte por sobretemperatura:** si la temperatura supera `TMAX` (40 °C por defecto), el firmware corta la resistencia en cualquier modo y la interfaz muestra una alarma.
 - **Botón de emergencia (HMI):** el botón rojo **EMERGENCIA** de la barra superior envía `ESTOP 1`. El Arduino apaga la resistencia en cualquier modo (manual, histéresis o PWM) y la mantiene apagada aunque se cambie de técnica o de setpoint. La interfaz muestra una franja roja y el botón pasa a **Rearmar**; al pulsarlo se envía `ESTOP 0` y el control vuelve a funcionar. Reiniciar el Arduino también lo rearma, y la resistencia arranca apagada.
+- **Pulsador físico de emergencia:** un botón normalmente abierto, conectado entre el pin `8` y `GND` (igual que el botón manual del pin `2`), activa el mismo paro enclavado que la HMI en cualquier modo. La HMI muestra el estado de emergencia y el control solo vuelve al enviar `ESTOP 0` con **Rearmar**.
 
-> **Importante:** este paro es **por software**. Solo funciona si el cable USB, el navegador y el Arduino están funcionando. No sustituye a un paro de emergencia real. Para una instalación con resistencia de red hay que añadir un **pulsador de emergencia físico** que corte la alimentación de la resistencia, independiente del Arduino.
+> **Importante:** ambos paros son **por software**: el de la HMI requiere que el cable USB, el navegador y el Arduino estén funcionando; el pulsador del pin `8` requiere que el Arduino y su firmware estén funcionando, y no corta directamente la alimentación de la resistencia. Ninguno sustituye a un paro de emergencia real. Para una instalación con resistencia de red hay que añadir un dispositivo físico independiente que corte la alimentación de la resistencia.
 
 ---
 
@@ -86,7 +87,7 @@ Todo el código del Arduino está en `firmware/`. Cada sketch tiene su propio `s
 
 | Entorno | Archivo | Qué hace |
 |---|---|---|
-| `incubadora` | `firmware/incubadora.ino` | Firmware real. Control de temperatura, telemetría `T,...` y comandos por serie (`GET`, `SET`, `SAVE`, `DEFAULTS`, `RELAY`) |
+| `incubadora` | `firmware/incubadora.ino` | Firmware real. Control de temperatura, telemetría `T,...` y comandos por serie (`GET`, `SET`, `SAVE`, `DEFAULTS`, `RELAY`, `ESTOP`) |
 | `blink` | `firmware/prueba.cpp` | Prueba: parpadea el LED integrado cada 500 ms y escribe `LED on` / `LED off` por serie |
 | `pines` | `firmware/pines.cpp` | Prueba: enciende y apaga los pines 5 y 6 a la vez cada 2 s |
 

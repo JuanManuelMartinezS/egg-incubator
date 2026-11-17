@@ -1,12 +1,11 @@
 /*
   Control de incubadora de codorniz - firmware con interfaz serial
   ----------------------------------------------------------------
-  Mantiene los 3 modos del circuito original (Manual, Histéresis, PWM) y los
-  mismos pines, pero ahora:
+  Mantiene los 3 modos del circuito (Manual, Histéresis, PWM) y además agrega:
     - No hay delay(): el lazo corre libre y responde a la interfaz en todo momento.
     - Todos los parámetros se cambian por serial (115200 baudios) y se pueden
       guardar en EEPROM para que sobrevivan a un reinicio.
-    - Los interruptores DIP siguen funcionando. Desde la interfaz se elige quién
+    - Los interruptores DIP funcionan por su cuenta y desde la interfaz se elige quién
       manda: "HW" (DIP / potenciómetro) o "SW" (la interfaz).
     - Límite de seguridad por sobretemperatura (TMAX): corta el relé en cualquier modo.
 
@@ -22,6 +21,7 @@
       DEFAULTS             restaura valores de fábrica (no los guarda)
       RELAY <0|1>          relé manual por software (solo modo MANUAL con MODESRC=SW)
       ESTOP <0|1>          1 = paro de emergencia: apaga la salida en cualquier modo hasta ESTOP 0
+                            También se activa con el pulsador físico del pin 8.
 
   Claves
     MODE      0 manual, 1 histéresis, 2 PWM          (solo si MODESRC=1)
@@ -36,13 +36,15 @@
     INTERVAL  cada cuántos ms se envía telemetría
 */
 
+#include <Arduino.h>
 #include <EEPROM.h>
 
-// ---------- Pines (idénticos al circuito original) ----------
+// ---------- Pines ----------
 const int redLED           = 7;
-const int pinPV            = A1;
-const int pinSP            = A0;
+const int pinPV            = A0;
+const int pinSP            = A1;
 const int pinBoton         = 2;
+const int pinBotonEmergencia = 8;
 const int pinRele          = 5;
 const int pinVentilador    = 6;  // se enciende junto con el relé
 const int pinDipAutoManual = 3;  // DIP SW 1  (LOW = automático)
@@ -69,7 +71,7 @@ Config cfg;
 void setDefaults() {
   cfg.magic    = CFG_MAGIC;
   cfg.mode     = 1;
-  cfg.modeSrc  = 0;      // por defecto mandan los DIP, como en el circuito original
+  cfg.modeSrc  = 0;      // por defecto mandan los DIP
   cfg.spSrc    = 0;      // por defecto manda el potenciómetro
   cfg.sp       = 37.5;
   cfg.margin   = 2.0;
@@ -86,7 +88,7 @@ float dutyPercent = 0;
 bool  relayOn = false;
 bool  alarm = false;
 bool  softRelay = false;     // relé manual pedido por la interfaz
-bool  estop = false;         // paro de emergencia pedido por la interfaz (se queda activo hasta ESTOP 0)
+bool  estop = false;         // paro enclavado por interfaz o pulsador físico hasta ESTOP 0
 bool  hystOn = false;        // estado de la histéresis
 uint8_t lastMode = 255;
 unsigned long windowStart = 0;
@@ -105,9 +107,17 @@ float readAnalogC(int pin) {
 
 void applyOutput(bool on) {
   relayOn = on;
-  digitalWrite(pinRele, on ? HIGH : LOW);
-  digitalWrite(pinVentilador, on ? HIGH : LOW);
+  digitalWrite(pinRele, on ? LOW : HIGH);
+  digitalWrite(pinVentilador, on ? LOW : HIGH);
   digitalWrite(redLED, on ? HIGH : LOW);
+}
+
+void activateEmergencyStop() {
+  estop = true;
+  softRelay = false;
+  hystOn = false;
+  windowStart = 0;
+  applyOutput(false);
 }
 
 uint8_t effectiveMode() {
@@ -176,7 +186,7 @@ void handleLine(String line) {
     printConfig();
   } else if (line.startsWith("ESTOP ")) {
     estop = line.substring(6).toInt() != 0;
-    if (estop) { softRelay = false; hystOn = false; applyOutput(false); }   // corta ya, sin esperar al lazo
+    if (estop) activateEmergencyStop();   // corta ya, sin esperar al lazo
     windowStart = 0;
     Serial.println(estop ? F("INFO PARO DE EMERGENCIA ACTIVO") : F("INFO PARO REARMADO"));
   } else if (line.startsWith("RELAY ")) {
@@ -200,6 +210,13 @@ void pollSerial() {
     char c = (char)Serial.read();
     if (c == '\n') { handleLine(rxLine); rxLine = ""; }
     else if (c != '\r' && rxLine.length() < 64) rxLine += c;
+  }
+}
+
+void pollEmergencyButton() {
+  if (digitalRead(pinBotonEmergencia) == LOW && !estop) {
+    activateEmergencyStop();
+    Serial.println(F("INFO PARO DE EMERGENCIA ACTIVO"));
   }
 }
 
@@ -242,11 +259,14 @@ bool controlManual() {
 void setup() {
   Serial.begin(115200);
   pinMode(redLED, OUTPUT);
+  digitalWrite(pinRele, HIGH);
   pinMode(pinRele, OUTPUT);
+  digitalWrite(pinVentilador, HIGH);
   pinMode(pinVentilador, OUTPUT);
   pinMode(pinDipAutoManual, INPUT_PULLUP);
   pinMode(pinDipHystPWM, INPUT_PULLUP);
   pinMode(pinBoton, INPUT_PULLUP);
+  pinMode(pinBotonEmergencia, INPUT_PULLUP);
   applyOutput(false);
 
   EEPROM.get(0, cfg);
@@ -258,6 +278,7 @@ void setup() {
 
 void loop() {
   pollSerial();
+  pollEmergencyButton();
 
   unsigned long now = millis();
   if (now - lastRead >= 50) {           // lectura y control ~20 veces por segundo
